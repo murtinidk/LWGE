@@ -1,4 +1,5 @@
-﻿using Editor.Utilities;
+﻿using Editor.Common;
+using Editor.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -77,7 +78,7 @@ namespace Editor.GameProject
             }
         }
 
-        private string _errorMsg;
+        private string _errorMsg = String.Empty;
         public string ErrorMsg
         {
             get => _errorMsg;
@@ -92,8 +93,7 @@ namespace Editor.GameProject
         }
 
         private ObservableCollection<ProjectTemplate> _projectTemplates = new ObservableCollection<ProjectTemplate>();
-        public ReadOnlyObservableCollection<ProjectTemplate> ProjectTemplates
-        { get; }
+        public ReadOnlyObservableCollection<ProjectTemplate> ProjectTemplates { get; }
 
         private bool ValidateProjectPath()
         {
@@ -128,6 +128,42 @@ namespace Editor.GameProject
                 IsValid = true;
             }
             return IsValid;
+        }
+
+        public string ConstructProject(ProjectTemplate template)
+        {
+            ValidateProjectPath();
+            if(!IsValid) { return String.Empty; }
+
+            if (!Path.EndsInDirectorySeparator(ProjectPath)) ProjectPath += @"\";
+            var path = $@"{ProjectPath}{ProjectName}\";
+
+            try
+            {
+                if(!Directory.Exists(path)) Directory.CreateDirectory(path);
+                foreach (var folder in template.Folders)
+                {
+                    Directory.CreateDirectory(Path.GetFullPath(Path.Combine(Path.GetDirectoryName(path), folder)));
+                }
+
+                var dirInfo = new DirectoryInfo(path + @".lwge\");
+                dirInfo.Attributes |= FileAttributes.Hidden;
+                File.Copy(template.IconFilePath, Path.GetFullPath(Path.Combine(dirInfo.FullName, "Icon.png")));
+                File.Copy(template.ScreenshotFilePath, Path.GetFullPath(Path.Combine(dirInfo.FullName, "Screenshot.png")));
+
+                var projectXml = File.ReadAllText(template.ProjectFilePath);
+                projectXml = String.Format(projectXml, ProjectName, ProjectPath);
+                var projectPath = Path.GetFullPath(Path.Combine(path, $"{ProjectName}{Project.Extension}"));
+                File.WriteAllText(projectPath, projectXml);
+
+                return path;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                //TODO log errors
+                return String.Empty;
+            }
         }
 
         public CreateProject()
