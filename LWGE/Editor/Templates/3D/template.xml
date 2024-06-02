@@ -1,0 +1,9 @@
+<ProjectTemplate xmlns="http://schemas.datacontract.org/2004/07/Editor.GameProject" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+  <Folders xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+    <a:string>.lwge</a:string>
+    <a:string>content</a:string>
+    <a:string>gameCode</a:string>
+  </Folders>
+  <ProjectFile>project.lwge</ProjectFile>
+  <ProjectType>3D Project</ProjectType>
+</ProjectTemplate>
